@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Health Score — BI CX 2.0</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #F4F6F9; color: #1F1F1F; padding: 2rem 1rem; }
+  .doc { max-width: 720px; margin: 0 auto; }
+
+  .header { background: #0069B4; color: #fff; padding: 1.75rem 2rem; border-radius: 12px; margin-bottom: 1.5rem; }
+  .header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+  .header p { font-size: 14px; opacity: .8; }
+
+  .section { margin-bottom: 1.5rem; }
+  .section-title { font-size: 12px; font-weight: 600; color: #6B7280; text-transform: uppercase; letter-spacing: .07em; margin-bottom: .75rem; padding-bottom: .4rem; border-bottom: 1px solid #E5E7EB; }
+
+  .card { background: #fff; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: .75rem; }
+
+  .score-visual { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-top: .75rem; }
+  .score-box { background: #0069B4; color: #fff; border-radius: 10px; padding: .75rem 1.25rem; text-align: center; min-width: 80px; }
+  .score-box .num { font-size: 34px; font-weight: 700; line-height: 1; }
+  .score-box .lbl { font-size: 11px; opacity: .8; margin-top: 4px; }
+  .faixas { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .faixa { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-green { background: #2E7D32; } .dot-yellow { background: #F9A825; }
+  .dot-orange { background: #E65100; } .dot-red { background: #C62828; }
+
+  .indicator-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .6rem; }
+  .ind-card { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: .85rem 1rem; }
+  .ind-name { font-size: 13px; font-weight: 600; color: #111827; margin-bottom: 3px; }
+  .ind-desc { font-size: 12px; color: #6B7280; line-height: 1.45; }
+  .ind-weight { font-size: 12px; color: #0069B4; margin-top: 7px; font-weight: 600; }
+  .ind-bar-bg { background: #E5E7EB; border-radius: 4px; height: 4px; margin-top: 5px; }
+  .ind-bar { background: #0069B4; border-radius: 4px; height: 4px; }
+
+  .trend-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .trend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .ti-up { color: #2E7D32; font-size: 16px; font-weight: 700; }
+  .ti-down { color: #C62828; font-size: 16px; font-weight: 700; }
+  .ti-flat { color: #F9A825; font-size: 16px; font-weight: 700; }
+
+  .filters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .filter-item { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: .7rem 1rem; }
+  .filter-item .f-label { font-size: 11px; color: #9CA3AF; margin-bottom: 3px; }
+  .filter-item .f-name { font-size: 13px; font-weight: 500; color: #111827; }
+
+  .config-links { display: flex; flex-direction: column; gap: .6rem; }
+  .config-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: .85rem 1rem; }
+  .config-info .label { font-size: 13px; font-weight: 600; color: #111827; }
+  .config-info .desc { font-size: 12px; color: #6B7280; margin-top: 3px; }
+  .config-btn { display: inline-flex; align-items: center; gap: 6px; background: #0069B4; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; text-decoration: none; flex-shrink: 0; }
+  .config-btn:hover { background: #005a9e; }
+
+  .note { background: #EBF4FF; border-left: 3px solid #0069B4; border-radius: 0 8px 8px 0; padding: .7rem 1rem; font-size: 13px; color: #1e4d8c; margin-top: .75rem; line-height: 1.6; }
+  .warn { background: #FFFBEB; border-left: 3px solid #F9A825; border-radius: 0 8px 8px 0; padding: .7rem 1rem; font-size: 13px; color: #7a5800; margin-top: .75rem; line-height: 1.6; }
+
+  .footer { text-align: center; margin-top: 2rem; font-size: 12px; color: #9CA3AF; }
+
+  @media (max-width: 500px) {
+    .filters-grid { grid-template-columns: 1fr; }
+    .config-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <div class="header">
+    <h1>📊 Painel Health Score</h1>
+    <p>BI CX 2.0 · Zucchetti Brasil · Documentação de uso</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">O que é o Health Score?</div>
+    <div class="card">
+      <p style="font-size:14px;line-height:1.75;color:#374151">
+        O Health Score é uma nota de 0 a 100 que resume a saúde do relacionamento de cada cliente com a Zucchetti. Ele combina 9 indicadores de diferentes dimensões — atendimento, engajamento e financeiro — ponderados por pesos configuráveis.
+      </p>
+      <div class="score-visual">
+        <div class="score-box">
+          <div class="num">84</div>
+          <div class="lbl">exemplo</div>
+        </div>
+        <div class="faixas">
+          <div class="faixa"><span class="dot dot-green"></span><span><strong>Saudável</strong> — score ≥ 75</span></div>
+          <div class="faixa"><span class="dot dot-yellow"></span><span><strong>Atenção</strong> — score entre 50 e 74</span></div>
+          <div class="faixa"><span class="dot dot-orange"></span><span><strong>Em risco</strong> — score entre 25 e 49</span></div>
+          <div class="faixa"><span class="dot dot-red"></span><span><strong>Crítico</strong> — score abaixo de 25</span></div>
+        </div>
+      </div>
+      <div class="note">Clientes sem dados suficientes em um indicador não são penalizados: o peso é redistribuído proporcionalmente entre os demais.</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Indicadores e pesos atuais</div>
+    <div class="indicator-grid">
+      <div class="ind-card"><div class="ind-name">CSAT</div><div class="ind-desc">Percentual de pesquisas com nota 4 ou 5</div><div class="ind-weight">21%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:21%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Último contato</div><div class="ind-desc">Dias desde o último chamado aberto (recência)</div><div class="ind-weight">15%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:15%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Chats</div><div class="ind-desc">Taxa de atendimento via chat (1 − taxa de abandono)</div><div class="ind-weight">15%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:15%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">TMA</div><div class="ind-desc">Tempo médio de atendimento — penaliza tempos elevados</div><div class="ind-weight">13%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:13%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Volume</div><div class="ind-desc">Volume de chamados comparado à mediana do produto</div><div class="ind-weight">13%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:13%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Tarefas Dev</div><div class="ind-desc">Proporção de tarefas de defeito sobre o total de chamados</div><div class="ind-weight">6%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:6%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Backlog RQs</div><div class="ind-desc">Proporção de RQs em aberto sobre o total de chamados</div><div class="ind-weight">6%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:6%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">TME</div><div class="ind-desc">Tempo médio de espera — penaliza espera elevada no chat</div><div class="ind-weight">6%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:6%"></div></div></div>
+      <div class="ind-card"><div class="ind-name">Engajamento Debx</div><div class="ind-desc">Visualização de telas e quantidade de títulos emitidos</div><div class="ind-weight">5%</div><div class="ind-bar-bg"><div class="ind-bar" style="width:5%"></div></div></div>
+    </div>
+    <div class="warn"><strong>Indicadores fixos:</strong> Engajamento Debx, Tarefas Dev e Backlog RQs são calculados automaticamente e não possuem faixas editáveis na planilha.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tendência</div>
+    <div class="card">
+      <p style="font-size:14px;line-height:1.75;color:#374151;margin-bottom:.75rem">
+        O painel exibe a variação do score em relação ao mês anterior, calculada pela média de tendência dos principais indicadores (CSAT, TMA, Volume e Engajamento quando disponível).
+      </p>
+      <div class="trend-row">
+        <div class="trend-item"><span class="ti-up">▲</span><span>Melhora — score subiu vs mês anterior</span></div>
+        <div class="trend-item"><span class="ti-down">▼</span><span>Queda — score caiu vs mês anterior</span></div>
+        <div class="trend-item"><span class="ti-flat">►</span><span>Estável — sem variação significativa</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Filtros disponíveis</div>
+    <div class="filters-grid">
+      <div class="filter-item"><div class="f-label">Cliente</div><div class="f-name">Filtra por empresa ou grupo</div></div>
+      <div class="filter-item"><div class="f-label">Produto</div><div class="f-name">DEBX, MAGO, SOFTA</div></div>
+      <div class="filter-item"><div class="f-label">Classificação</div><div class="f-name">Saudável, Atenção, Em risco, Crítico</div></div>
+      <div class="filter-item"><div class="f-label">Financeiro</div><div class="f-name">Em dia, Em atraso, Inadimplente</div></div>
+    </div>
+    <div class="note">O botão <strong>Clientes VIP</strong> filtra rapidamente a lista de contas prioritárias definidas pela equipe.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Ajustes e configurações</div>
+    <div class="config-links">
+      <div class="config-row">
+        <div class="config-info">
+          <div class="label">⚖️ Pesos dos indicadores</div>
+          <div class="desc">Defina a importância relativa de cada indicador. A soma deve ser sempre 100%.</div>
+        </div>
+        <a class="config-btn" href="https://docs.google.com/spreadsheets/d/12pmI8ekDJnhJz6ZKjHjbAMlONx25vE22EGZdDqtQ7qw/edit?gid=1710235991#gid=1710235991" target="_blank">↗ Abrir</a>
+      </div>
+      <div class="config-row">
+        <div class="config-info">
+          <div class="label">🎚️ Parâmetros de faixas</div>
+          <div class="desc">Configure os limites de score por faixa de cada indicador. Não altere os nomes nem adicione linhas.</div>
+        </div>
+        <a class="config-btn" href="https://docs.google.com/spreadsheets/d/12pmI8ekDJnhJz6ZKjHjbAMlONx25vE22EGZdDqtQ7qw/edit?gid=2139998819#gid=2139998819" target="_blank">↗ Abrir</a>
+      </div>
+    </div>
+    <div class="note">Após editar qualquer planilha, o painel é atualizado automaticamente às 03:00 BRT. Para refletir imediatamente, atualize manualmente no Power BI Service.</div>
+  </div>
+
+  <div class="footer">BI CX 2.0 · Zucchetti Brasil · Coordenação CX</div>
+
+</div>
+</body>
+</html>
