@@ -310,7 +310,7 @@
       <div class="hero-stat"><div class="num">5</div><div class="lbl">Painéis</div></div>
       <div class="hero-stat"><div class="num">432</div><div class="lbl">Clientes monitorados</div></div>
       <div class="hero-stat"><div class="num">3</div><div class="lbl">Equipes monitoradas</div></div>
-      <div class="hero-stat"><div class="num">D+1</div><div class="lbl">Atualização</div></div>
+      <div class="hero-stat"><div class="num">2x/dia</div><div class="lbl">Atualização (00h e 12h)</div></div>
     </div>
   </div>
 </div>
@@ -361,6 +361,11 @@
       <div class="callout">
         <strong>Janela de dados — últimos 6 meses</strong>
         O Painel Health e todos os indicadores de saúde do cliente utilizam os últimos 6 meses como janela de cálculo. O período exato é exibido dinamicamente no painel (ex: Jan/2026 a Jun/2026) e se atualiza automaticamente todo mês.
+      </div>
+
+      <div class="callout warning">
+        <strong>Atualização do BI — 2x ao dia</strong>
+        O conjunto de dados é atualizado duas vezes por dia, às <strong>00:00</strong> e às <strong>12:00 (horário de Brasília)</strong>. Os chamados do Movidesk, porém, são sempre consolidados até o dia anterior (D-1), independentemente do horário de atualização — a integração utiliza o endpoint <span class="mono" style="display:inline-block">/PAST</span> da API, que retorna apenas dados já encerrados do dia anterior. As demais bases (Financeiro, NPS, Dados Debx) refletem as duas atualizações diárias normalmente.
       </div>
     </section>
 
@@ -744,7 +749,7 @@
 
       <div class="card">
         <h3>Fonte de dados</h3>
-        <p>As pesquisas são preenchidas manualmente na planilha <strong>Base_NPS.xlsx</strong> armazenada no SharePoint pessoal de Leonardo Ferraz. O Power BI conecta via OAuth2 e atualiza D+1 às 03:00 BRT. A aba ativa é <strong>NPS 2026</strong>.</p>
+        <p>As pesquisas são preenchidas manualmente na planilha <strong>Base_NPS.xlsx</strong> armazenada no SharePoint pessoal de Leonardo Ferraz. O Power BI conecta via OAuth2 e atualiza duas vezes ao dia (00:00 e 12:00 BRT). A aba ativa é <strong>NPS 2026</strong>.</p>
       </div>
 
       <h3 style="font-size:14px;font-weight:700;margin:20px 0 12px;">Campos da planilha Base_NPS</h3>
@@ -899,7 +904,7 @@
 
       <div class="callout warning">
         <strong>Atualização do painel</strong>
-        Após editar qualquer planilha, o painel é atualizado automaticamente às 03:00 BRT. Para refletir as mudanças imediatamente, atualize manualmente no Power BI Service.
+        Após editar qualquer planilha, o painel é atualizado automaticamente nos próximos horários programados: <strong>00:00</strong> ou <strong>12:00 (BRT)</strong>. Para refletir as mudanças imediatamente, atualize manualmente no Power BI Service. Lembre-se que os chamados do Movidesk sempre refletem até o dia anterior (D-1), mesmo após a atualização — ver nota na Visão Geral.
       </div>
 
       <div class="callout">
