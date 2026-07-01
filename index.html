@@ -291,6 +291,21 @@
   }
   footer strong { color: rgba(255,255,255,0.85); }
 
+  .nav-icon {
+    width: 38px; height: 38px;
+    background: var(--blue-700);
+    border: 1.5px solid rgba(255,255,255,0.55);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .nav-icon-row { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
+  .nav-icon-item { display: flex; align-items: flex-start; gap: 12px; max-width: 260px; }
+  .nav-icon-item strong { display: block; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .nav-icon-item span { color: var(--muted); font-size: 13px; line-height: 1.5; }
+
   @media (max-width: 768px) {
     .layout { grid-template-columns: 1fr; }
     .sidebar { display: none; }
@@ -356,6 +371,25 @@
       <div class="card">
         <h3>Como navegar pelo BI</h3>
         <p>A tela inicial apresenta cinco botões de acesso direto a cada painel. Clique no painel desejado para entrar. Dentro de cada painel, use o botão de retorno (↩) no canto superior direito para voltar à tela inicial. A maioria dos painéis possui filtros na barra superior para segmentar os dados por equipe, agente, período e cliente.</p>
+      </div>
+
+      <div class="card">
+        <h3>🧭 Botões de navegação (presentes em todos os painéis)</h3>
+        <p>No canto superior direito de cada painel, um pequeno grupo de botões azuis dá acesso a funções rápidas, sempre nos mesmos ícones:</p>
+        <div class="nav-icon-row">
+          <div class="nav-icon-item">
+            <div class="nav-icon">📖</div>
+            <div><strong>Manual</strong><span>Abre esta documentação (o BI de CX — Index) numa nova aba.</span></div>
+          </div>
+          <div class="nav-icon-item">
+            <div class="nav-icon">↩</div>
+            <div><strong>Voltar</strong><span>Retorna para a tela inicial do BI, com os cinco painéis.</span></div>
+          </div>
+          <div class="nav-icon-item">
+            <div class="nav-icon">❓</div>
+            <div><strong>Legenda</strong><span>Abre a legenda de cores e ícones da página atual. Enquanto estiver aberta, o botão se transforma num ✖ — clique novamente para fechar.</span></div>
+          </div>
+        </div>
       </div>
 
       <div class="callout">
@@ -638,7 +672,7 @@
             <tr><td><strong>CSAT</strong></td><td>0,18</td><td>Satisfação nas pesquisas respondidas — apenas avaliação do agente.</td></tr>
             <tr><td><strong>Último Contato</strong></td><td>0,13</td><td>Recência do último chamado aberto.</td></tr>
             <tr><td><strong>TMA</strong></td><td>0,11</td><td>Tempo Médio de Atendimento em horas úteis.</td></tr>
-            <tr><td><strong>Volume</strong></td><td>0,11</td><td>Volume de chamados vs. mediana do produto.</td></tr>
+            <tr><td><strong>Volume</strong></td><td>0,11</td><td>Chamados no último mês fechado vs. média móvel dos 5 meses anteriores. Penaliza tanto aumento expressivo (possível frustração) quanto queda severa (possível redução de uso — ver "Detecção de silêncio" abaixo).</td></tr>
             <tr><td><strong>Chats</strong></td><td>0,13</td><td>Taxa de atendimento de chats (1 - taxa de abandono).</td></tr>
             <tr><td><strong>Engajamento</strong></td><td>0,05</td><td>Uso do produto Debx via GA4 (exclusivo DEBX).</td></tr>
             <tr><td><strong>Tarefas</strong></td><td>0,05</td><td>Proporção de tarefas de Defeito sobre o total de chamados.</td></tr>
@@ -653,6 +687,31 @@
         <strong>Soma dos pesos = 1,00</strong>
         A soma dos pesos deve ser sempre 100%. Ao alterar pesos na planilha, verifique se o total permanece em 1,00. O NPS só entra no cálculo para clientes que tenham respondido nos últimos 6 meses — para os demais, o peso é redistribuído.
       </div>
+
+      <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px;">🆕 Indicador Volume — detecção de silêncio (jul/2026)</h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">O cálculo do indicador Volume foi revisado para reagir mais rápido a mudanças recentes de comportamento. O método anterior comparava um bloco de 6 meses contra o bloco de 6 meses anterior — uma queda pontual no mês mais recente ficava "diluída" dentro da média do bloco e não aparecia no score. O novo método compara o último mês fechado contra a média móvel dos 5 meses anteriores.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Situação</th><th>Efeito no score</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Aumento de chamados acima do esperado</td><td>Penaliza gradualmente (mesmas faixas já existentes: 100 → 75 → 50 → 25 → 0)</td></tr>
+            <tr><td>Queda de até 70% vs. a média dos 5 meses</td><td>Considerada oscilação normal — sem penalidade</td></tr>
+            <tr><td>Queda entre 70% e 90%</td><td>Score 50 — atenção</td></tr>
+            <tr><td>Queda acima de 90% (silêncio quase total)</td><td>Score 0 — sinal de risco</td></tr>
+            <tr><td>Baseline abaixo de 5 chamados/mês</td><td>Não penaliza em nenhuma direção — volume baixo demais para uma variação percentual ser confiável</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warning">
+        <strong>Por que isso importa: "silent churn"</strong>
+        Um aumento de chamados normalmente indica atrito com o produto, mas uma queda abrupta de atividade — especialmente vindo de um cliente que sempre teve volume relevante — é um sinal de risco tão ou mais importante, e o método antigo simplesmente não o capturava. Esse padrão é documentado na literatura de Customer Success como <em>silent churn</em>: o cliente se desengaja silenciosamente antes de cancelar, sem gerar nenhum alerta visível nos indicadores tradicionais.
+      </div>
+
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">Os limiares de queda (70% / 90%) e o piso mínimo de baseline (5 chamados/mês) são provisórios — foram definidos com base em heurísticas de mercado e serão recalibrados conforme o time analisar a distribuição real da carteira. Essa lógica também passou a alimentar um alerta visível no <a href="#detalhe-cliente" style="color:var(--blue-600)">painel de Detalhe do Cliente</a>.</p>
 
       <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px;">Faixas de score NPS</h3>
       <div class="score-row">
@@ -704,7 +763,7 @@
       </div>
 
       <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px;">Tabela de clientes</h3>
-      <p style="color:var(--muted);font-size:14px;margin-bottom:12px;">A tabela lista todos os clientes ativos. Clique em um cliente para acessar o drill-through detalhado. A tabela pode ser expandida clicando no ícone de expansão.</p>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:12px;">A tabela lista todos os clientes ativos. No canto superior direito da tabela ficam dois botões: <strong>👤</strong> (pessoa) e <strong>ℹ️</strong> (informação).</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -725,9 +784,44 @@
       </div>
 
       <div class="callout">
-        <strong>Tabela expandida</strong>
-        Clique no ícone de expansão (▼) para abrir a tabela em tela cheia com colunas adicionais: NPS Data, NPS Comentário, NPS Motivo Elogio, NPS Motivo Reclamação e scores individuais de cada indicador do Health.
+        <strong>Tabela — expandir e recolher</strong>
+        <div class="nav-icon-row" style="margin-top:10px;">
+          <div class="nav-icon-item">
+            <div class="nav-icon">👤</div>
+            <div><strong>Detalhe do cliente</strong><span>Selecione um cliente na tabela e clique aqui para abrir o drill-through completo (ver seção <a href="#detalhe-cliente" style="color:var(--blue-600)">Detalhe do Cliente</a>).</span></div>
+          </div>
+          <div class="nav-icon-item">
+            <div class="nav-icon">ℹ️</div>
+            <div><strong>Expandir</strong><span>Abre a tabela em tela cheia com colunas adicionais: Status, NPS Data, Produto, MRR, CSAT, Último Ticket, Dias/Valor Inadimp., Horas Disponíveis, NPS Comentário, Elogio e Reclamação.</span></div>
+          </div>
+          <div class="nav-icon-item">
+            <div class="nav-icon">⬇️</div>
+            <div><strong>Recolher</strong><span>Substitui o botão ℹ️ quando a tabela está expandida. Clique para voltar à visão resumida.</span></div>
+          </div>
+        </div>
       </div>
+      <h3 style="font-size:14px;font-weight:700;margin:24px 0 12px;">📚 Fontes e referências da metodologia</h3>
+      <p style="color:var(--muted);font-size:14px;margin-bottom:16px;">O desenho do Health Score (pesos, faixas, e a revisão do indicador Volume) foi embasado em boas práticas de mercado de Customer Success / Customer Health Scoring. Fontes consultadas:</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Fonte</th><th>Usada para</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="https://www.gainsight.com/blog/customer-health-scores/" target="_blank" style="color:var(--blue-600)">Gainsight — Customer Health Score Explained</a></td><td>Benchmark de distribuição de pesos entre categorias (uso, suporte, sentimento)</td></tr>
+            <tr><td><a href="https://cdp.com/glossary/customer-health-score/" target="_blank" style="color:var(--blue-600)">CDP.com — Customer Health Score (glossário)</a></td><td>Modelo de pesos ponderados e validação empírica contra churn real</td></tr>
+            <tr><td><a href="https://www.statisfy.com/blog/customer-health-score-metrics" target="_blank" style="color:var(--blue-600)">Statisfy — 8 Essential Customer Health Score Metrics</a></td><td>Interpretação de picos de volume de chamados como sinal de atrito</td></tr>
+            <tr><td><a href="https://www.supportbench.com/detect-silent-churn-support-signals-early-detection/" target="_blank" style="color:var(--blue-600)">Supportbench — Detecting "silent churn" using support signals</a></td><td>Heurística de silêncio prolongado (base para os novos limiares de queda do indicador Volume)</td></tr>
+            <tr><td><a href="https://www.withrealm.com/blog/what-is-customer-health-score" target="_blank" style="color:var(--blue-600)">Realm — What Is a Customer Health Score</a></td><td>Princípio de olhar tendência, não apenas volume absoluto de chamados</td></tr>
+            <tr><td><a href="https://www.planhat.com/customer-success/health" target="_blank" style="color:var(--blue-600)">Planhat — The Ultimate Guide to Customer Health Scores</a></td><td>Boas práticas de manutenção e recalibração periódica do modelo</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <strong>Revisão de pesos em andamento</strong>
+        Uma primeira revisão comparando os pesos atuais com os benchmarks acima (jul/2026) identificou que o BI concentra ~51% do peso em indicadores operacionais de suporte, acima da faixa típica de mercado (~20–25%). Essa comparação só é válida se "chamado" representar atrito no negócio — e a equipe já validou que uma parte relevante do volume de suporte é dúvida de utilização legítima, não atrito. Por isso, os pesos atuais foram mantidos; a documentação interna completa dessa análise está registrada para consulta da equipe de BI.
+      </div>
+
     </section>
 
     <!-- NPS -->
@@ -869,6 +963,7 @@
       <div class="card">
         <h3>📝 Análise automática do cliente</h3>
         <p>O painel lateral exibe um diagnóstico textual gerado automaticamente com os principais destaques do cliente, incluindo: taxa de resposta CSAT, último comentário CSAT, NPS mais recente com comentário, último contato, volume de chamados, TME médio, taxa de atendimento no chat, engajamento Debx, tarefas de defeito e backlog de RQs. Inadimplência aparece em destaque em vermelho quando aplicável.</p>
+        <p style="margin-top:10px;">🆕 <strong>Alerta de queda/pico de volume (jul/2026):</strong> quando o cliente tem baseline de suporte relevante (5+ chamados/mês) e o último mês fechado se desvia significativamente dessa média, um bloco de alerta colorido aparece automaticamente — vermelho para queda crítica (silêncio, possível desengajamento), laranja para queda forte ou pico expressivo de chamados.</p>
       </div>
     </section>
 
@@ -911,6 +1006,11 @@
         <strong>CSAT — Separação de perguntas</strong>
         A partir de 2026, a pesquisa CSAT passou a ter duas perguntas: avaliação do agente (questionId = "wr1X") e avaliação do produto (questionId = "KqYD"). O Power Query filtra apenas a pergunta do agente para manter a consistência histórica. A avaliação do produto será integrada futuramente como indicador separado.
       </div>
+
+      <div class="callout warning">
+        <strong>⚠ Atenção ao montar visuais com o campo "Status"</strong>
+        A coluna <span class="mono" style="display:inline-block">Status</span> (usada para os ícones coloridos de classificação) vem de uma tabela auxiliar sem relacionamento com os clientes. Se você adicionar esse campo a uma tabela/matriz sem também aplicar a medida <span class="mono" style="display:inline-block">Filtro Status Health</span> como filtro de nível de visual (igual a 1), cada cliente aparecerá duplicado uma vez por status possível. Sempre que usar o campo Status num novo visual, adicione esse filtro.
+      </div>
     </section>
 
     <!-- GLOSSÁRIO -->
@@ -942,7 +1042,8 @@
             <tr><td><strong>Backlog</strong></td><td>Volume de tickets em aberto aguardando resolução. RQs pendentes de desenvolvimento.</td></tr>
             <tr><td><strong>MRR</strong></td><td>Monthly Recurring Revenue. Receita Mensal Recorrente — valor mensal de contrato do cliente.</td></tr>
             <tr><td><strong>Health Score</strong></td><td>Pontuação de 0 a 100 que representa a saúde do relacionamento com o cliente, calculada com base em CSAT, TMA, Volume, Backlog, Tarefas, TME, Chats, Engajamento e NPS.</td></tr>
-            <tr><td><strong>Dormente</strong></td><td>Cliente sem chamados nos últimos 6 meses mas com histórico anterior. Não recebe Health Score calculado.</td></tr>
+            <tr><td><strong>Dormente</strong></td><td>Cliente sem NENHUM chamado nos últimos 6 meses completos, mas com histórico anterior. Não recebe Health Score calculado (fica em branco) por ausência total de dados recentes — diferente de uma queda de volume, que ainda gera um score (ver <em>Silent Churn</em>).</td></tr>
+            <tr><td><strong>Silent Churn</strong></td><td>Termo de Customer Success para quando um cliente reduz ou interrompe o engajamento gradualmente, sem reclamar ou cancelar formalmente — por isso não aparece nos alertas tradicionais. O indicador Volume foi redesenhado em jul/2026 para detectar esse padrão comparando o último mês fechado com a média recente do cliente.</td></tr>
             <tr><td><strong>RQ</strong></td><td>Requisição. Solicitação de desenvolvimento ou melhoria vinculada a um ticket de atendimento.</td></tr>
             <tr><td><strong>DEBX / MAGO / SOFTA</strong></td><td>As três equipes de suporte monitoradas pelo BI, correspondendo às linhas de produto da Zucchetti.</td></tr>
             <tr><td><strong>Clientes VIP</strong></td><td>Segmento de clientes estratégicos marcados para acompanhamento prioritário.</td></tr>
@@ -957,7 +1058,7 @@
 
 <footer>
   <strong>BI de CX da Zucchetti — Dashboard de Indicadores de Experiência do Cliente</strong><br>
-  Zucchetti Brasil · Documentação gerada para uso interno · Atualizada em junho/2026
+  Zucchetti Brasil · Documentação gerada para uso interno · Atualizada em julho/2026
 </footer>
 
 <script>
